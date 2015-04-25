@@ -9,6 +9,12 @@ instance Show Lambda where
   show (Abs v b) = "\\" ++ v ++ "." ++ show b
   show (App f a) = "("++show f++") "++show a
 
+reduceB :: Lambda -> Lambda
+reduceB l = go l (reduceS l)
+  where 
+    go p Nothing = p
+    go _ (Just n) = go n (reduceS n)
+
 reduceS :: Lambda -> Maybe Lambda
 reduceS (Var _)            = Nothing
 reduceS (Abs f b)          = Nothing

@@ -1,7 +1,7 @@
 import Defs
 
 test :: Lambda
-test =  Abs "a" (Abs "b" (Var "a"))
+test = App (Abs "a" (Abs "b" (Var "a"))) (Var "x")
 
 main :: IO ()
-main = print test
+main = print $ reduceB test
