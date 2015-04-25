@@ -1,2 +1,7 @@
+import Defs
+
+test :: Lambda
+test = Var "test"
+
 main :: IO ()
-main = print "hello"
+main = print test

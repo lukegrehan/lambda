@@ -9,7 +9,6 @@ cabal-version:       >=1.10
 
 executable lambda
   main-is:             lambda.hs
-  -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.8 && <4.9
   -- hs-source-dirs:      
