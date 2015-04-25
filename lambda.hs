@@ -1,7 +1,7 @@
 import Defs
 
 test :: Lambda
-test = Var "test"
+test =  Abs "a" (Abs "b" (Var "a"))
 
 main :: IO ()
 main = print test
