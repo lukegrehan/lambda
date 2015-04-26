@@ -1,7 +1,8 @@
 import Defs
+import Parser
 
-test :: Lambda
 test = App (Abs "a" (Abs "b" (Var "a"))) (Var "x")
+testS = "\\x.\\y.\\z.z"
 
 main :: IO ()
-main = print $ reduceB test
+main = print $ parse' testS
