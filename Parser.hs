@@ -1,28 +1,34 @@
 module Parser where
 
 import Text.ParserCombinators.Parsec
+import Defs
 
-parse' :: String -> Either ParseError String
-parse' = parse lambdaExpr "(unknown)"
+parse' :: String -> Either ParseError Lambda
+parse' = parse lambdaExpr ""
 
-varName = do
+braces = between (char '(') (char ')')
+
+var' = do
   i <- letter
   rest <- many alphaNum
   return $ i:rest
+ 
+varName = do
+  v <- var'
+  return $ Var v
 
 app = do
-  char '('
-  f <- lambdaExpr
+  f <- braces lambdaExpr
+  spaces
   a <- lambdaExpr
-  char ')'
-  return $ "(" ++ f ++ ":" ++ a ++ ")"
+  return $ App f a
 
 lambdaTerm = do
   char '\\'
-  var <- varName
+  var <- var'
   char '.'
   body <- lambdaExpr
-  return $ var ++ "-> (" ++ body ++")"
+  return $ Abs var body
 
 lambdaExpr =  lambdaTerm
           <|> app

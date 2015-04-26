@@ -2,8 +2,9 @@ import Defs
 import Eval
 import Parser
 
-test = App (Abs "a" (Abs "b" (Var "a"))) (Var "x")
-testS = "\\x.\\y.\\z.z"
+test2 = "(((\\a.\\b.\\c.c) x) y) z"
+
+runParse s = reduceB <$> parse' s
 
 main :: IO ()
-main = print $ parse' testS
+main = print $ runParse test2
