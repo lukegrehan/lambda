@@ -1,10 +1,10 @@
-module Parser where
+module Parser (parse) where
 
-import Text.ParserCombinators.Parsec
+import Text.ParserCombinators.Parsec hiding (parse)
 import Defs
 
-parse' :: String -> Either ParseError Lambda
-parse' = parse lambdaExpr ""
+parse :: String -> IO (Either ParseError Lambda)
+parse = parseFromFile lambdaExpr
 
 braces = between (char '(') (char ')')
 

@@ -1,10 +1,18 @@
-import Defs
 import Eval
 import Parser
+import System.Environment (getArgs)
 
-test2 = "(((\\a.\\b.\\c.c) x) y) z"
-
-runParse s = reduceB <$> parse' s
+getFileName :: IO String
+getFileName = do
+  args <- getArgs
+  if(null args)
+    then getLine
+    else return $ head args
 
 main :: IO ()
-main = print $ runParse test2
+main = do
+  fname <- getFileName
+  l <- parse fname
+  case l of
+    Left e -> print e
+    Right l -> print $ reduceB l
