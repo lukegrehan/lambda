@@ -15,4 +15,4 @@ main = do
   l <- parse fname
   case l of
     Left e -> print e
-    Right l -> print $ reduceB l
+    Right l -> print $ reduceB <$> flatten l

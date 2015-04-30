@@ -1,6 +1,24 @@
-module Eval where
+module Eval (flatten, reduceB, reduceS) where
 import Defs
+import Data.List
+import Control.Applicative
 
+flatten :: [Defn] -> Maybe Lambda
+flatten ds = flatten' <$> m <*> ds'
+  where
+    m = defnBody <$> find isMain ds
+    ds' = mkTable $ filter (not.isMain) ds
+    mkTable ds = Just $ zip (map name ds) (map defnBody ds)
+    isMain = (\d -> name d == "Main")
+
+flatten' :: Lambda -> [(String, Lambda)] -> Lambda
+flatten' (Var s) ds = case lookup s ds of
+                        Nothing -> Var s
+                        (Just ns) -> ns
+flatten' (Abs v b) ds = Abs v $ flatten' b ds
+flatten' (App f a) ds = App (flatten' f ds) (flatten' a ds)
+
+-- unfold?
 reduceB :: Lambda -> Lambda
 reduceB l = go l (reduceS l)
   where 

@@ -1,5 +1,7 @@
 module Defs where
 
+data Defn = Defn { name :: String, defnBody :: Lambda }
+
 data Lambda = Var String
             | Abs { var :: String, body :: Lambda }
             | App { func :: Lambda, arg :: Lambda }
