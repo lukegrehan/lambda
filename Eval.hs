@@ -1,5 +1,6 @@
 module Eval (flatten, reduceB, reduceS) where
 import Defs
+import Data.Maybe
 import Data.List
 import Control.Applicative
 
@@ -12,13 +13,10 @@ flatten ds = flatten' <$> m <*> ds'
     isMain = (\d -> name d == "Main")
 
 flatten' :: Lambda -> [(String, Lambda)] -> Lambda
-flatten' (Var s) ds = case lookup s ds of
-                        Nothing -> Var s
-                        (Just ns) -> ns
+flatten' (Var s) ds = fromMaybe (Var s) $ lookup s ds
 flatten' (Abs v b) ds = Abs v $ flatten' b ds
 flatten' (App f a) ds = App (flatten' f ds) (flatten' a ds)
 
--- unfold?
 reduceB :: Lambda -> Lambda
 reduceB l = go l (reduceS l)
   where 
