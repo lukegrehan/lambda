@@ -1,14 +1,17 @@
 module Parser (parse) where
 
-import Text.ParserCombinators.Parsec hiding (parse)
+import Text.Parsec hiding (parse)
 import Defs
 
-parse :: String -> IO (Either ParseError [Defn])
-parse inp = parseFromFile lambda inp
+parse :: FilePath -> IO (Either ParseError [Defn])
+parse fname = do
+  cont <- readFile fname
+  return $ runParser lambda (0,[]) fname cont
 
 lambda = defn `sepEndBy` (many newline)
   
 defn = do
+  resetSyms
   name <- defnName
   spaces
   string ":="
@@ -23,6 +26,22 @@ defnName = do
 
 -------------------------------------------------------------------------------
 
+getSymTable :: String -> Parsec s (Int, [(String, Int)]) Int
+getSymTable name = do
+  (cnt, vals) <- getState
+  case lookup name vals of
+    Just n -> return n
+    Nothing -> do
+      putState (cnt+1, vals++[(name, cnt)])
+      return cnt
+
+resetSyms = putState (0, [])
+
+unsetSym name = do
+  (cnt, vals) <- getState
+  let nVals = deleteBy ((==name).fst) vals
+  putState (cnt, nVals)
+
 braces = between (char '(') (char ')')
 
 var' = do
@@ -32,7 +51,8 @@ var' = do
  
 varName = do
   v <- var'
-  return $ Var v
+  uid <- getSymTable v
+  return $ Var uid
 
 app = do
   f <- braces lambdaExpr
@@ -42,7 +62,8 @@ app = do
 
 lambdaTerm = do
   char '\\'
-  var <- var'
+  v <- var'
+  var <- getSymTable v
   char '.'
   body <- lambdaExpr
   return $ Abs var body
