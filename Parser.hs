@@ -11,7 +11,7 @@ parse fname = do
 lambda = defn `sepEndBy` (many newline)
   
 defn = do
-  resetSyms
+  putState (0, []) -- reset syms
   name <- defnName
   spaces
   string ":="
@@ -26,8 +26,8 @@ defnName = do
 
 -------------------------------------------------------------------------------
 
-getSymTable :: String -> Parsec s (Int, [(String, Int)]) Int
-getSymTable name = do
+getSym :: String -> Parsec s (Int, [(String, Int)]) Int
+getSym name = do
   (cnt, vals) <- getState
   case lookup name vals of
     Just n -> return n
@@ -35,12 +35,14 @@ getSymTable name = do
       putState (cnt+1, vals++[(name, cnt)])
       return cnt
 
-resetSyms = putState (0, [])
-
-unsetSym name = do
+getSetSym name = do
   (cnt, vals) <- getState
-  let nVals = deleteBy ((==name).fst) vals
-  putState (cnt, nVals)
+  return $ lookup name vals
+
+--unsetSym name = do
+--  (cnt, vals) <- getState
+--  let nVals = deleteBy ((==name).fst) vals
+--  putState (cnt, nVals)
 
 braces = between (char '(') (char ')')
 
@@ -51,11 +53,13 @@ var' = do
  
 varName = do
   v <- var'
-  uid <- getSymTable v
-  return $ Var uid
+  uid <- getSetSym v
+  return $ maybe (Free v) Var $ uid
 
 app = do
+  st <- getState
   f <- braces lambdaExpr
+  putState st
   spaces
   a <- lambdaExpr
   return $ App f a
@@ -63,7 +67,7 @@ app = do
 lambdaTerm = do
   char '\\'
   v <- var'
-  var <- getSymTable v
+  var <- getSym v
   char '.'
   body <- lambdaExpr
   return $ Abs var body
