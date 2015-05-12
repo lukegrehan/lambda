@@ -1,6 +1,6 @@
 module Defs where
 
-data Defn = Defn { name :: String, defnBody :: Lambda }
+data Defn = Defn { name :: String, defnBody :: Lambda } deriving Show
 
 data Lambda = Var Int
             | Free String
