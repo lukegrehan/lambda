@@ -27,10 +27,9 @@ reduceB l = go l (beta l)
 beta :: Lambda -> Maybe Lambda
 beta (Var _)            = Nothing
 beta (Free _)           = Nothing
-beta (Abs f b)          = Nothing
+beta (Abs f b)          = Abs <$> pure f <*> beta b
 beta (App (Abs v b) ar) = Just $ replace b v ar
-beta (App f ar)         = (flip App ar) <$> beta f
-                        -- = App <$> beta f <*> pure ar
+beta (App f ar)         = App <$> beta f <*> pure ar
 
 replace :: Lambda -> Int -> Lambda -> Lambda 
 replace (App f a) s ar = App (replace f s ar) (replace a s ar)
