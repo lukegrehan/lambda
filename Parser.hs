@@ -6,9 +6,9 @@ import Defs
 parse :: FilePath -> IO (Either ParseError [Defn])
 parse fname = do
   cont <- readFile fname
-  return $ runParser lambda (0,[]) fname cont
+  return $ runParser lambdaFile (0,[]) fname cont
 
-lambda = defn `sepEndBy` (many newline)
+lambdaFile = defn `sepEndBy` (many newline)
   
 defn = do
   putState (0, []) -- reset syms
@@ -16,7 +16,7 @@ defn = do
   spaces
   string ":="
   spaces
-  defnBody <- lambdaExpr
+  defnBody <- lambda
   return $ Defn name defnBody
 
 defnName = do
@@ -39,12 +39,16 @@ getSetSym name = do
   (cnt, vals) <- getState
   return $ lookup name vals
 
+withState act = do
+  st <- getState
+  r <- act
+  putState st
+  return r
+
 --unsetSym name = do
 --  (cnt, vals) <- getState
 --  let nVals = deleteBy ((==name).fst) vals
 --  putState (cnt, nVals)
-
-braces = between (char '(') (char ')')
 
 var' = do
   i <- letter
@@ -56,12 +60,9 @@ varName = do
   uid <- getSetSym v
   return $ maybe (Free v) Var $ uid
 
-app = do
-  st <- getState
-  f <- braces lambdaExpr
-  putState st
-  spaces
-  a <- lambdaExpr
+app = between (char '(') (char ')') $ do
+  f <- withState lambda
+  a <- lambda
   return $ App f a
 
 lambdaTerm = do
@@ -69,9 +70,9 @@ lambdaTerm = do
   v <- var'
   var <- getSym v
   char '.'
-  body <- lambdaExpr
+  body <- lambda
   return $ Abs var body
 
-lambdaExpr =  lambdaTerm
+lambda =  (lambdaTerm
           <|> app
-          <|> varName
+          <|> varName) <* spaces
