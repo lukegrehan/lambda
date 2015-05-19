@@ -5,18 +5,22 @@ import Data.List
 import Control.Applicative
 
 flatten :: [Defn] -> Maybe Lambda
-flatten ds = flatten' <$> m <*> ds'
+flatten ds = flatten' <$> main
   where
-    m = defnBody <$> find isMain ds
-    ds' = mkTable $ filter (not.isMain) ds
-    mkTable ds = Just $ zip (map name ds) (map defnBody ds)
-    isMain = (\d -> name d == "Main")
+    main = snd <$> find ((== "Main").fst) resolved
 
-flatten' :: Lambda -> [(String, Lambda)] -> Lambda
-flatten' (Free s)  ds = fromMaybe (Free s) $ lookup s ds
-flatten' (Var s)   ds = (Var s)
-flatten' (Abs v b) ds = Abs v $ flatten' b ds
-flatten' (App f a) ds = App (flatten' f ds) (flatten' a ds)
+    flatten' :: Lambda -> Lambda
+    flatten' (Free s)  = fromMaybe (Free s) $ lookup s resolved
+    flatten' (Var s)   = (Var s)
+    flatten' (Abs v b) = Abs v $ flatten' b
+    flatten' (App f a) = App (flatten' f) (flatten' a)
+
+    resolved = map (resolve' <$>) ds
+      where
+        resolve' (Var v) = (Var v)
+        resolve' (Abs f b) = Abs f $ resolve' b
+        resolve' (App f ar) = App (resolve' f) (resolve' ar)
+        resolve' (Free f) = fromMaybe (Free f) $ lookup f ds
 
 reduceB :: Lambda -> Lambda
 reduceB l = go l (beta l)

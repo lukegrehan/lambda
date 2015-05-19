@@ -17,7 +17,7 @@ defn = do
   string ":="
   spaces
   defnBody <- lambda
-  return $ Defn name defnBody
+  return $ (name, defnBody)
 
 defnName = do
   i <- upper

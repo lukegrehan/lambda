@@ -3,4 +3,4 @@ Z := \f.\x.x
 O := \f.\x.(f x)
 T := ((P O) O)
 
-Main := T
+Main := ((T f) x)
