@@ -15,7 +15,7 @@ flatten ds = flatten' <$> main
     flatten' (Abs v b) = Abs v $ flatten' b
     flatten' (App f a) = App (flatten' f) (flatten' a)
 
-    resolved = map (resolve' <$>) ds
+    resolved = head $ drop 10 $ iterate (map (resolve' <$>)) ds -- I am a bad person... TODO
       where
         resolve' (Var v) = (Var v)
         resolve' (Abs f b) = Abs f $ resolve' b
